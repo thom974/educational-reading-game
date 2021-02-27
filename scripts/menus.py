@@ -18,13 +18,52 @@ def loading_font(string, colour,position,*args):  # string = text to display, co
     return [font, font_rect]
 # MENUS ----------------------------
 def game_mode_one(screen):
-    pass
+    # main loop variables + control
+    running = True
+    while running:
+        # clear screen
+        screen.fill((255,0,0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+
+        pygame.display.flip()
 
 def game_mode_two(screen):
-    pass
+    # main loop variables + control
+    running = True
+    while running:
+        # clear screen
+        screen.fill((0, 255, 0))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+
+        pygame.display.flip()
 
 def game_mode_three(screen):
-    pass
+    # main loop variables + control
+    running = True
+    while running:
+        # clear screen
+        screen.fill((0, 0, 255))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+
+        pygame.display.flip()
 
 # main menu - what will be seen upon program launch
 def main_menu(screen):
@@ -57,6 +96,13 @@ def main_menu(screen):
                     selector.change_mode(1)
                 if event.key == pygame.K_UP:
                     selector.change_mode(-1)
+                if event.key == pygame.K_RETURN:
+                    if selector.current_mode == 0:
+                        game_mode_one(screen)
+                    elif selector.current_mode == 1:
+                        game_mode_two(screen)
+                    elif selector.current_mode == 2:
+                        game_mode_three(screen)
 
         # selector code
         selector.draw_frame()
