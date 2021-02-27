@@ -1,10 +1,12 @@
 # IMPORTS --------------------------
 import pygame
+import scripts.classes as c
 # INIT -----------------------------
 pygame.init()
 # GLOBALS --------------------------
-title_font = pygame.font.Font("scripts/data/fonts/scribble.ttf",80)
-game_font = pygame.font.Font("scripts/data/fonts/scribble.ttf",30)
+title_font = pygame.font.Font("data/fonts/scribble.ttf",80)
+game_font = pygame.font.Font("data/fonts/scribble.ttf",30)
+FPS = 60
 # FUNCTIONS ------------------------
 def loading_font(string, colour,position,*args):  # string = text to display, colour = tuple, position = tuple
     if len(args) > 0 and args[0]:
@@ -26,15 +28,46 @@ def game_mode_three(screen):
 
 # main menu - what will be seen upon program launch
 def main_menu(screen):
-    # display title
+    # creating variables
     title, title_rect = loading_font("The Reading Corner",(255,0,0),(400,150),True)
-    screen.blit(title,title_rect)
-
-    # display game modes
     mode_one, mode_one_rect = loading_font("Single Word Mode",(222, 29, 80),(240,300))
-    screen.blit(mode_one,mode_one_rect)
     mode_two, mode_two_rect = loading_font("Definition Mode",(161, 21, 58),(200,400))
-    screen.blit(mode_two,mode_two_rect)
     mode_three, mode_three_rect = loading_font("Sentence Mode", (121,13,36), (240, 500))
-    screen.blit(mode_three, mode_three_rect)
 
+    # create selector object
+    selector = c.Selector(screen)
+    selector.modes = [mode_one_rect,mode_two_rect,mode_three_rect]
+    selector.load_frames()
+    selector.set_location([400,300])
+
+    # main loop + loop variables for control
+    running = True
+    clock = pygame.time.Clock()
+    while running:
+        # clear screen
+        screen.fill((255,255,255))
+        for event in pygame.event.get():
+            # detect exit
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            # detect keyboard input
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_DOWN:
+                    selector.change_mode(1)
+                if event.key == pygame.K_UP:
+                    selector.change_mode(-1)
+
+        # selector code
+        selector.draw_frame()
+        selector.increment_frame()
+
+        # display game modes
+        screen.blit(title,title_rect)
+        screen.blit(mode_one,mode_one_rect)
+        screen.blit(mode_two,mode_two_rect)
+        screen.blit(mode_three, mode_three_rect)
+
+        # pygame code
+        pygame.display.flip()
+        clock.tick(FPS)
