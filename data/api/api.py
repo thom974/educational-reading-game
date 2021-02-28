@@ -1,35 +1,37 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from pprint import pprint
-import time
+
+class Spreadsheet:
+    def __init__(self):
+        self.database = None
+        self.active_word = None
+
+    def fetch_endpoint(self):
+        scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
+                 "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
+        creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+        client = gspread.authorize(creds)
+        self.database = client.open("TRC - Data").sheet1
+
+    def find_min(self):
+        # O(N) time complexity
+        lst = self.database.get_all_records()
+        min_val, min_dct = None, None
+
+        for dct in lst:
+            if min_val is None or float(dct['ACCURACY:']) < min_val:
+                min_val = float(dct['ACCURACY:'])
+                min_dct = dct
+
+        self.active_word = min_dct['WORD:']
 
 
-def find_min(lst):
-    # O(N) time complexity
-    min_val = None
-    min_dct = None
-    for dct in lst:
-        if min_val is None or float(dct['ACCURACY:']) < min_val:
-            min_val = float(dct['ACCURACY:'])
-            min_dct = dct
-    return min_dct
+if __name__ == '__main__':
+    s = Spreadsheet()
+    s.fetch_endpoint()
+    s.find_min()
+    print(s.active_word)
 
-start = time.time()
-
-scope =["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
-
-creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json",scope)
-
-client = gspread.authorize(creds)
-
-sheet = client.open("TRC - Data").sheet1
-
-data = sheet.get_all_records()
-
-end = time.time()
-
-print(end - start)
-
-print(find_min(data))
 
 
