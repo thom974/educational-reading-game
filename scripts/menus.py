@@ -1,8 +1,10 @@
 # IMPORTS --------------------------
 import pygame
 import scripts.classes as c
+import scripts.api.api as a
 # INIT -----------------------------
 pygame.init()
+spreadsheet = a.Spreadsheet()
 # GLOBALS --------------------------
 title_font = pygame.font.Font("data/fonts/scribble.ttf",80)
 game_font = pygame.font.Font("data/fonts/scribble.ttf",30)

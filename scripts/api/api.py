@@ -10,7 +10,7 @@ class Spreadsheet:
     def fetch_endpoint(self):
         scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
                  "https://www.googleapis.com/auth/drive.file", "https://www.googleapis.com/auth/drive"]
-        creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+        creds = ServiceAccountCredentials.from_json_keyfile_name("scripts/api/credentials.json", scope)
         client = gspread.authorize(creds)
         self.database = client.open("TRC - Data").sheet1
 
@@ -26,12 +26,11 @@ class Spreadsheet:
 
         self.active_word = min_dct['WORD:']
 
-
-if __name__ == '__main__':
-    s = Spreadsheet()
-    s.fetch_endpoint()
-    s.find_min()
-    print(s.active_word)
+# if __name__ == '__main__':
+#     s = Spreadsheet()
+#     s.fetch_endpoint()
+#     s.find_min()
+#     print(s.active_word)
 
 
 
