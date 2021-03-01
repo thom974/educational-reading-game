@@ -6,6 +6,8 @@ class Spreadsheet:
     def __init__(self):
         self.database = None
         self.active_word = None
+        self.active_row = None
+        self.incorrect_words = []
 
     def fetch_endpoint(self):
         scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
@@ -19,10 +21,11 @@ class Spreadsheet:
         lst = self.database.get_all_records()
         min_val, min_dct = None, None
 
-        for dct in lst:
-            if min_val is None or float(dct['ACCURACY:']) < min_val:
+        for row_num, dct in enumerate(lst):
+            if (min_val is None or float(dct['ACCURACY:']) < min_val) and dct['WORD:'] not in self.incorrect_words:
                 min_val = float(dct['ACCURACY:'])
                 min_dct = dct
+                self.active_row = row_num + 2
 
         self.active_word = min_dct['WORD:']
 

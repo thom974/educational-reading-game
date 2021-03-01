@@ -5,6 +5,7 @@ import scripts.api.api as a
 # INIT -----------------------------
 pygame.init()
 spreadsheet = a.Spreadsheet()
+spreadsheet.fetch_endpoint()
 # GLOBALS --------------------------
 title_font = pygame.font.Font("data/fonts/scribble.ttf",80)
 game_font = pygame.font.Font("data/fonts/scribble.ttf",30)
@@ -20,6 +21,9 @@ def loading_font(string, colour,position,*args):  # string = text to display, co
     return [font, font_rect]
 # MENUS ----------------------------
 def game_mode_one(screen):
+    # game mode 1 class
+    mode = c.G1(spreadsheet)
+    mode.start()
     # main loop variables + control
     running = True
     while running:

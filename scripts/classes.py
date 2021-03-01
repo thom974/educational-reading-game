@@ -1,5 +1,6 @@
 # IMPORTS --------------------------
 import pygame
+from threading import Thread
 # INIT -----------------------------
 pygame.init()
 # CLASSES --------------------------
@@ -55,3 +56,29 @@ class Selector:
         cmr = self.modes[self.current_mode]
         self.frame_surfaces[0] = pygame.transform.scale(self.frame_surfaces[0],(cmr.w,cmr.h))
         self.frame_surfaces[1] = pygame.transform.scale(self.frame_surfaces[1],(cmr.w,cmr.h))
+
+class G1(Thread):
+    def __init__(self,spreadsheet):
+        Thread.__init__(self)
+        self.s = spreadsheet
+        self.valid_ans = ["Y","N","P"]
+
+    def run(self):
+        while True:
+            self.s.find_min()
+            print("Pronounce this word: ", self.s.active_word)
+            response = input("Correct? Y/N/P")
+
+            while type(response) != str or response not in self.valid_ans:
+                response = input("Enter in one of the valid prompts: Y/N/P")
+
+            if response == "Y":
+                cur_val = int(self.s.database.cell(self.s.active_row,2).value)   # get current value in according cell
+                self.s.database.update_cell(self.s.active_row,2,cur_val + 1)
+            elif response == "N":
+                cur_val = int(self.s.database.cell(self.s.active_row,3).value)
+                self.s.database.update_cell(self.s.active_row,3,cur_val + 1)
+                self.s.incorrect_words.append(self.s.active_word)
+            elif response == "P":
+                cur_val = int(self.s.database.cell(self.s.active_row, 4).value)
+                self.s.database.update_cell(self.s.active_row, 4, cur_val + 1)
