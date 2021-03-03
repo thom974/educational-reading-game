@@ -82,3 +82,25 @@ class G1(Thread):
             elif response == "P":
                 cur_val = int(self.s.database.cell(self.s.active_row, 4).value)
                 self.s.database.update_cell(self.s.active_row, 4, cur_val + 1)
+
+class Animation:   # two frame scribble animations
+    def __init__(self):
+        self.frames = []
+        self.current_frame = 0
+        self.position = []
+
+    def set_position(self,pos):
+        self.position = [pos[0] - self.frames[0].get_width()/2, pos[1] - self.frames[0].get_height()/2]
+
+    def load_frames(self,frames):
+        self.frames = frames
+
+    def resize_frames(self,size):
+        for i in range(len(self.frames)):
+            self.frames[i] = pygame.transform.scale(self.frames[i],size)
+
+    def increment_frame(self):
+        if self.current_frame < 60:
+            self.current_frame += 1
+        else:
+            self.current_frame = 0
