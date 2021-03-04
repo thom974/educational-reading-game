@@ -1,5 +1,6 @@
 # IMPORTS --------------------------
 import pygame
+import threading
 import scripts.classes as c
 import scripts.api.api as a
 # INIT -----------------------------
@@ -54,9 +55,31 @@ def game_mode_one(screen):
     # main loop variables + control
     running = True
     clock = pygame.time.Clock()
+
+    # creating art elements / animations
+    m_text, m_text_rect = loading_font("Your word:",(0,0,0),[400,80],True)
+
+    box = c.Animation()
+    box.load_frames([pygame.image.load("data/images/box/box1.png").convert(),pygame.image.load("data/images/box/box2.png").convert()])
+    box.resize_frames([600,150])
+    box.set_position([400,255])
+
+    r_b, w_b, p_b = c.Animation(), c.Animation(), c.Animation()
+    r_b.load_frames([pygame.image.load("data/images/right/right1.png").convert(),pygame.image.load("data/images/right/right2.png").convert()])
+    w_b.load_frames([pygame.image.load("data/images/wrong/wrong1.png").convert(),pygame.image.load("data/images/wrong/wrong2.png").convert()])
+    p_b.load_frames([pygame.image.load("data/images/partial/partial1.png").convert(),pygame.image.load("data/images/partial/partial2.png").convert()])
+    r_b.resize_frames([80,80])
+    w_b.resize_frames([80,80])
+    p_b.resize_frames([80,80])
+    r_b.set_position([200,455])
+    w_b.set_position([400,455])
+    p_b.set_position([600,455])
+
+    animations = [box,r_b,w_b,p_b]
+
     while running:
         # clear screen
-        screen.fill((255,0,0))
+        screen.fill((255,255,255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -64,6 +87,15 @@ def game_mode_one(screen):
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_ESCAPE:
                     start_transition = True
+                if event.key == pygame.K_l:
+                    print(threading.active_count())
+
+        # drawing elements on the screen
+        for ani in animations:
+            screen.blit(ani.frames[ani.cftd],ani.position)
+            ani.increment_frame()
+
+        screen.blit(m_text,m_text_rect)
 
         # transition code
         if start_transition:

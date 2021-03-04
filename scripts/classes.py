@@ -1,6 +1,6 @@
 # IMPORTS --------------------------
 import pygame
-from threading import Thread
+from threading import Thread, Event
 # INIT -----------------------------
 pygame.init()
 # CLASSES --------------------------
@@ -60,12 +60,18 @@ class Selector:
 class G1(Thread):
     def __init__(self,spreadsheet):
         Thread.__init__(self)
+        self.font = pygame.font.Font("data/fonts/scribble.ttf",60)
+        self.daemon = True
         self.s = spreadsheet
         self.valid_ans = ["Y","N","P"]
+        self.e = Event()
+        self.word_to_display = []
 
     def run(self):
         while True:
             self.s.find_min()
+            self.create_word()
+            self.e.wait()   # once found word to display, wait until user guesses it until proceeding
             print("Pronounce this word: ", self.s.active_word)
             response = input("Correct? Y/N/P")
 
@@ -83,10 +89,16 @@ class G1(Thread):
                 cur_val = int(self.s.database.cell(self.s.active_row, 4).value)
                 self.s.database.update_cell(self.s.active_row, 4, cur_val + 1)
 
+    def create_word(self):
+        word = self.font.render(self.s.active_word,True,(255,255,255))
+        word_rect = word.get_rect(center=(400,255))
+        self.word_to_display = [word,word_rect]
+
 class Animation:   # two frame scribble animations
     def __init__(self):
         self.frames = []
         self.current_frame = 0
+        self.cftd = 0
         self.position = []
 
     def set_position(self,pos):
@@ -101,6 +113,10 @@ class Animation:   # two frame scribble animations
 
     def increment_frame(self):
         if self.current_frame < 60:
+            if self.current_frame % 20 == 0:
+                self.cftd = 1 if self.cftd == 0 else 0
             self.current_frame += 1
         else:
             self.current_frame = 0
+
+
