@@ -97,6 +97,12 @@ def game_mode_one(screen):
 
         screen.blit(m_text,m_text_rect)
 
+        # display word on screen
+        try:
+            screen.blit(mode.word_to_display[0],mode.word_to_display[1])
+        except IndexError:
+            pass
+
         # transition code
         if start_transition:
             transition(screen,transition_frame)

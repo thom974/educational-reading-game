@@ -66,26 +66,22 @@ class G1(Thread):
         self.valid_ans = ["Y","N","P"]
         self.e = Event()
         self.word_to_display = []
+        self.answer = None
 
     def run(self):
         while True:
             self.s.find_min()
             self.create_word()
             self.e.wait()   # once found word to display, wait until user guesses it until proceeding
-            print("Pronounce this word: ", self.s.active_word)
-            response = input("Correct? Y/N/P")
 
-            while type(response) != str or response not in self.valid_ans:
-                response = input("Enter in one of the valid prompts: Y/N/P")
-
-            if response == "Y":
+            if self.answer == "Y":
                 cur_val = int(self.s.database.cell(self.s.active_row,2).value)   # get current value in according cell
                 self.s.database.update_cell(self.s.active_row,2,cur_val + 1)
-            elif response == "N":
+            elif self.answer == "N":
                 cur_val = int(self.s.database.cell(self.s.active_row,3).value)
                 self.s.database.update_cell(self.s.active_row,3,cur_val + 1)
                 self.s.incorrect_words.append(self.s.active_word)
-            elif response == "P":
+            elif self.answer == "P":
                 cur_val = int(self.s.database.cell(self.s.active_row, 4).value)
                 self.s.database.update_cell(self.s.active_row, 4, cur_val + 1)
 
