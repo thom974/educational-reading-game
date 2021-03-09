@@ -65,6 +65,9 @@ def game_mode_one(screen):
     box.set_position([400,255])
 
     r_b, w_b, p_b = c.Animation(), c.Animation(), c.Animation()
+    r_b.name = "correct"
+    w_b.name = "wrong"
+    p_b.name = "partial"
     r_b.load_frames([pygame.image.load("data/images/right/right1.png").convert(),pygame.image.load("data/images/right/right2.png").convert()])
     w_b.load_frames([pygame.image.load("data/images/wrong/wrong1.png").convert(),pygame.image.load("data/images/wrong/wrong2.png").convert()])
     p_b.load_frames([pygame.image.load("data/images/partial/partial1.png").convert(),pygame.image.load("data/images/partial/partial2.png").convert()])
@@ -80,6 +83,11 @@ def game_mode_one(screen):
     while running:
         # clear screen
         screen.fill((255,255,255))
+
+        # mouse code
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        pygame.mouse.set_cursor(*pygame.cursors.arrow)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -87,10 +95,20 @@ def game_mode_one(screen):
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_ESCAPE:
                     start_transition = True
-                if event.key == pygame.K_l:
-                    print(threading.active_count())
+            if event.type == pygame.MOUSEBUTTONUP:
+                for ani in animations:
+                    if ani.check_click(mouse_x,mouse_y):
+                        if ani.name == "correct":
+                            mode.answer = "Y"
+                            mode.e.set()
+                        elif ani.name == "wrong":
+                            mode.answer = "N"
+                            mode.e.set()
+                        elif ani.name == "partial":
+                            mode.answer = "P"
+                            mode.e.set()
 
-        # drawing elements on the screen
+        # animation code - each iteration will handle a single Animation object
         for ani in animations:
             screen.blit(ani.frames[ani.cftd],ani.position)
             ani.increment_frame()
