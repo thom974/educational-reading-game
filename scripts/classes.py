@@ -93,7 +93,7 @@ class G1(Thread):
 
     def create_word(self):
         word = self.font.render(self.s.active_word, True, (0, 0, 0))
-        word_rect = word.get_rect(center=(400, 255))
+        word_rect = word.get_rect(center=(400, 285))
         self.word_to_display = [word, word_rect]
 
 
@@ -123,7 +123,6 @@ class Animation:  # two frame scribble animations
         else:
             self.current_frame = 0
 
-    def check_click(self, xm, ym):
+    def check_hover(self, xm, ym):
         hitbox = self.frames[0].get_rect(x=self.position[0], y=self.position[1])
         return hitbox.collidepoint(xm, ym)
-

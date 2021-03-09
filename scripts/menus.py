@@ -18,7 +18,6 @@ def load_animation_sequence(lst):
     for i in range(1,len(lst)+1):
         for _ in range(lst[i-1]):
             transition_dictionary['scribble'].append("transition" + str(i))
-    print(transition_dictionary['scribble'])
 
 def loading_trans_dictionary():
     for i in range(1, 7):
@@ -26,7 +25,6 @@ def loading_trans_dictionary():
         surf = pygame.image.load("data/images/transition/" + name + ".png").convert()
         surf.set_colorkey((0,0,0))
         transition_dictionary[name] = surf
-    print(transition_dictionary)
 
 def loading_font(string, colour,position,*args):  # string = text to display, colour = tuple, position = tuple
     if len(args) > 0 and args[0]:
@@ -57,12 +55,12 @@ def game_mode_one(screen):
     clock = pygame.time.Clock()
 
     # creating art elements / animations
-    m_text, m_text_rect = loading_font("Your word:",(0,0,0),[400,80],True)
+    m_text, m_text_rect = loading_font("Your word:",(0,0,0),[400,110],True)
 
     box = c.Animation()
     box.load_frames([pygame.image.load("data/images/box/box1.png").convert(),pygame.image.load("data/images/box/box2.png").convert()])
     box.resize_frames([600,150])
-    box.set_position([400,255])
+    box.set_position([400,285])
 
     r_b, w_b, p_b = c.Animation(), c.Animation(), c.Animation()
     r_b.name = "correct"
@@ -74,9 +72,9 @@ def game_mode_one(screen):
     r_b.resize_frames([80,80])
     w_b.resize_frames([80,80])
     p_b.resize_frames([80,80])
-    r_b.set_position([200,455])
-    w_b.set_position([400,455])
-    p_b.set_position([600,455])
+    r_b.set_position([200,485])
+    w_b.set_position([400,485])
+    p_b.set_position([600,485])
 
     animations = [box,r_b,w_b,p_b]
 
@@ -86,7 +84,6 @@ def game_mode_one(screen):
 
         # mouse code
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        pygame.mouse.set_cursor(*pygame.cursors.arrow)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -97,7 +94,7 @@ def game_mode_one(screen):
                     start_transition = True
             if event.type == pygame.MOUSEBUTTONUP:
                 for ani in animations:
-                    if ani.check_click(mouse_x,mouse_y):
+                    if ani.check_hover(mouse_x,mouse_y):
                         if ani.name == "correct":
                             mode.answer = "Y"
                             mode.e.set()
@@ -112,6 +109,13 @@ def game_mode_one(screen):
         for ani in animations:
             screen.blit(ani.frames[ani.cftd],ani.position)
             ani.increment_frame()
+
+        for ani in animations:
+            if ani.check_hover(mouse_x,mouse_y) and ani.name != "":
+                pygame.mouse.set_cursor(*pygame.cursors.diamond)
+                break
+        else:
+            pygame.mouse.set_cursor(*pygame.cursors.arrow)
 
         screen.blit(m_text,m_text_rect)
 
