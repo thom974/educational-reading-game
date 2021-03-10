@@ -110,6 +110,7 @@ def game_mode_one(screen):
             screen.blit(ani.frames[ani.cftd],ani.position)
             ani.increment_frame()
 
+        # change cursor when hovering code
         for ani in animations:
             if ani.check_hover(mouse_x,mouse_y) and ani.name != "":
                 pygame.mouse.set_cursor(*pygame.cursors.diamond)
@@ -124,6 +125,23 @@ def game_mode_one(screen):
             screen.blit(mode.word_to_display[0],mode.word_to_display[1])
         except IndexError:
             pass
+
+        # display word history
+        h_str, h_rect = loading_font("Word History",(186, 183, 182),(700,50))
+        screen.blit(h_str, h_rect)
+        for i in range(1,4):
+            try:
+                mid = (750 - mode.word_history_d[-1*i][1].w / 2, 150 - 30 * (i - 1))
+                mode.word_history_d[-1*i][1].center = mid
+                screen.blit(mode.word_history_d[-1*i][0],mode.word_history_d[-1*i][1])
+            except IndexError:
+                pass
+
+        # display streak
+        s_str1, s_rect1 = loading_font("Streak",(186, 183, 182),(75,50))
+        s_str2, s_rect2 = loading_font(str(mode.streak),(107, 112, 255),(75,80))
+        screen.blit(s_str1,s_rect1)
+        screen.blit(s_str2,s_rect2)
 
         # transition code
         if start_transition:

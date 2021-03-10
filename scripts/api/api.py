@@ -8,6 +8,7 @@ class Spreadsheet:
         self.active_word = None
         self.active_row = None
         self.incorrect_words = []
+        self.word_history = []
 
     def fetch_endpoint(self):
         scope = ["https://spreadsheets.google.com/feeds", 'https://www.googleapis.com/auth/spreadsheets',
@@ -27,6 +28,7 @@ class Spreadsheet:
                 min_dct = dct
                 self.active_row = row_num + 2
 
+        self.word_history.append(min_dct['WORD:'])
         self.active_word = min_dct['WORD:']
 
 # if __name__ == '__main__':

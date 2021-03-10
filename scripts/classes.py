@@ -65,12 +65,15 @@ class G1(Thread):
     def __init__(self, spreadsheet):
         Thread.__init__(self)
         self.font = pygame.font.Font("data/fonts/scribble.ttf", 60)
+        self.h_font = pygame.font.Font("data/fonts/scribble.ttf", 25)
         self.daemon = True
         self.s = spreadsheet
         self.valid_ans = ["Y", "N", "P"]
         self.e = Event()
         self.word_to_display = []
+        self.word_history_d = []
         self.answer = None
+        self.streak = 0
 
     def run(self):
         while True:
@@ -81,13 +84,19 @@ class G1(Thread):
             if self.answer == "Y":
                 cur_val = int(self.s.database.cell(self.s.active_row, 2).value)  # get current value in according cell
                 self.s.database.update_cell(self.s.active_row, 2, cur_val + 1)
+                self.create_h_word(1)
+                self.streak += 1
             elif self.answer == "N":
                 cur_val = int(self.s.database.cell(self.s.active_row, 3).value)
                 self.s.database.update_cell(self.s.active_row, 3, cur_val + 1)
                 self.s.incorrect_words.append(self.s.active_word)
+                self.create_h_word(2)
+                self.streak = 0
             elif self.answer == "P":
                 cur_val = int(self.s.database.cell(self.s.active_row, 4).value)
                 self.s.database.update_cell(self.s.active_row, 4, cur_val + 1)
+                self.create_h_word(3)
+                self.streak = 0
 
             self.e.clear()  # reset flag so that thread will wait.
 
@@ -95,6 +104,18 @@ class G1(Thread):
         word = self.font.render(self.s.active_word, True, (0, 0, 0))
         word_rect = word.get_rect(center=(400, 285))
         self.word_to_display = [word, word_rect]
+
+    def create_h_word(self,num):
+        prev_word = self.s.word_history[-1]
+        if num == 1:
+            color = (50, 168, 82)
+        elif num == 2:
+            color = (168, 54, 50)
+        else:
+            color = (222, 217, 84)
+
+        word_str = self.h_font.render(prev_word,True,color)
+        self.word_history_d.append([word_str,word_str.get_rect()])  # the font text itself and a Rect, which has NO position yet
 
 
 class Animation:  # two frame scribble animations
