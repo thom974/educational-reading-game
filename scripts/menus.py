@@ -26,13 +26,10 @@ def loading_trans_dictionary():
         surf.set_colorkey((0,0,0))
         transition_dictionary[name] = surf
 
-def loading_font(string, colour,position,*args):  # string = text to display, colour = tuple, position = tuple
-    if len(args) > 0 and args[0]:
-        font = title_font.render(string, True, colour)
-        font_rect = font.get_rect(center=position)
-    else:
-        font = game_font.render(string,True,colour)
-        font_rect = font.get_rect(center=position)
+def loading_font(string, colour,position,size):  # string = text to display, colour = tuple, position = tuple
+    font_obj = pygame.font.Font("data/fonts/scribble.ttf",size)
+    font = font_obj.render(string, True, colour)
+    font_rect = font.get_rect(center=position)
     return [font, font_rect]
 
 def transition(screen,frame):
@@ -55,7 +52,9 @@ def game_mode_one(screen):
     clock = pygame.time.Clock()
 
     # creating art elements / animations
-    m_text, m_text_rect = loading_font("Your word:",(0,0,0),[400,110],True)
+    m_text, m_text_rect = loading_font("Your word:",(0,0,0),[400,110],80)
+    h_str, h_rect = loading_font("Word History", (186, 183, 182), (700, 50), 30)
+    s_str1, s_rect1 = loading_font("Streak", (186, 183, 182), (75, 50), 30)
 
     box = c.Animation()
     box.load_frames([pygame.image.load("data/images/box/box1.png").convert(),pygame.image.load("data/images/box/box2.png").convert()])
@@ -127,7 +126,6 @@ def game_mode_one(screen):
             pass
 
         # display word history
-        h_str, h_rect = loading_font("Word History",(186, 183, 182),(700,50))
         screen.blit(h_str, h_rect)
         for i in range(1,4):
             try:
@@ -138,8 +136,7 @@ def game_mode_one(screen):
                 pass
 
         # display streak
-        s_str1, s_rect1 = loading_font("Streak",(186, 183, 182),(75,50))
-        s_str2, s_rect2 = loading_font(str(mode.streak),(107, 112, 255),(75,80))
+        s_str2, s_rect2 = loading_font(str(mode.streak), (107, 112, 255), (75, 80), 30)
         screen.blit(s_str1,s_rect1)
         screen.blit(s_str2,s_rect2)
 
@@ -155,19 +152,98 @@ def game_mode_one(screen):
         clock.tick(FPS)
 
 def game_mode_two(screen):
+    # game mode class
+    mode = c.G2()
+    mode.start()
+
     # main loop variables + control
     running = True
     clock = pygame.time.Clock()
+
+    # transition variables
+    start_transition = False
+    transition_frame = 0
+
+    # creating art elements / animations
+    m_text, m_text_rect = loading_font("Your math question:", (0, 0, 0), [400, 110], 40)
+    h_str, h_rect = loading_font("Answers", (186, 183, 182), (700, 50), 30)
+    s_str1, s_rect1 = loading_font("Streak", (186, 183, 182), (75, 50), 30)
+
+    # create Selector object
+    selector = c.Selector(screen)
+    selector.modes = [mode.answers[0][1], mode.answers[1][1],mode.answers[2][1]]
+    selector.set_location([200,485])
+
+    box = c.Animation()
+    box.load_frames([pygame.image.load("data/images/box/box1.png").convert(),
+                     pygame.image.load("data/images/box/box2.png").convert()])
+    box.resize_frames([600, 150])
+    box.set_position([400, 285])
+
+    animations = [box]      # create a list to hold all Animation objects
+
     while running:
         # clear screen
-        screen.fill((0, 255, 0))
+        screen.fill((255, 255, 255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_ESCAPE:
-                    running = False
+                    start_transition = True
+                if event.key == pygame.K_LEFT:
+                    selector.change_mode(-1,False)
+                if event.key == pygame.K_RIGHT:
+                    selector.change_mode(1,False)
+                if event.key == pygame.K_RETURN:
+                    # if 'c' in mode.answers[selector.current_mode]:
+                    #     print("You got the answer correct!")
+                    # else:
+                    #     print("You got the answer wrong.")
+                    mode.selected_ans = selector.current_mode
+                    mode.e.set()
+
+        # drawing elements to screen
+        s_str2, s_rect2 = loading_font(str(mode.streak), (107, 112, 255), (75, 80), 30)
+        screen.blit(m_text,m_text_rect)
+        screen.blit(h_str,h_rect)
+        screen.blit(s_str1,s_rect1)
+        screen.blit(s_str2,s_rect2)
+
+        # drawing question history
+        for i in range(1,4):
+            try:
+                mid = (750 - mode.question_history[-1*i][1].w / 2, 150 - 30 * (i - 1))
+                mode.question_history[-1*i][1].center = mid
+                screen.blit(mode.question_history[-1*i][0],mode.question_history[-1*i][1])
+            except IndexError:
+                pass
+
+        # drawing Selector to screen
+        selector.draw_frame()
+        selector.increment_frame()
+
+        # animation code
+        for ani in animations:
+            screen.blit(ani.frames[ani.cftd],ani.position)
+            ani.increment_frame()
+
+        # game mode code
+        screen.blit(mode.question_to_display[0],mode.question_to_display[1])
+        for q_answer in mode.answers:
+            try:
+                screen.blit(q_answer[0], q_answer[1])
+            except IndexError:
+                pass
+
+        # transition code for when mode is exited
+        if start_transition:
+            transition(screen, transition_frame)
+            if transition_frame < len(transition_dictionary['scribble']) - 1:
+                transition_frame += 1
+            else:
+                running = False
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -199,15 +275,14 @@ def main_menu(screen):
     transition_frame = 0
 
     # creating variables
-    title, title_rect = loading_font("The Reading Corner",(255,0,0),(400,150),True)
-    mode_one, mode_one_rect = loading_font("Single Word Mode",(222, 29, 80),(240,300))
-    mode_two, mode_two_rect = loading_font("Definition Mode",(161, 21, 58),(200,400))
-    mode_three, mode_three_rect = loading_font("Sentence Mode", (121,13,36), (240, 500))
+    title, title_rect = loading_font("The Reading Corner",(255,0,0),(400,150),80)
+    mode_one, mode_one_rect = loading_font("Single Word Mode",(222, 29, 80),(240,300),30)
+    mode_two, mode_two_rect = loading_font("Math Mode",(161, 21, 58),(200,400),30)
+    mode_three, mode_three_rect = loading_font("Sentence Mode", (121,13,36), (240, 500),30)
 
     # create selector object
     selector = c.Selector(screen)
     selector.modes = [mode_one_rect,mode_two_rect,mode_three_rect]
-    selector.load_frames()
     selector.set_location([400,300])
 
     # main loop + loop variables for control
@@ -224,9 +299,9 @@ def main_menu(screen):
             # detect keyboard input
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_DOWN:
-                    selector.change_mode(1)
+                    selector.change_mode(1,True)
                 if event.key == pygame.K_UP:
-                    selector.change_mode(-1)
+                    selector.change_mode(-1,True)
                 if event.key == pygame.K_RETURN:
                     start_transition = True
 

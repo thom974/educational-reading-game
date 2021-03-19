@@ -1,11 +1,9 @@
 # IMPORTS --------------------------
 import pygame
 from threading import Thread, Event
-
+import random
 # INIT -----------------------------
 pygame.init()
-
-
 # CLASSES --------------------------
 class Selector:
     def __init__(self, screen):
@@ -49,7 +47,7 @@ class Selector:
         w, h = self.frame_surfaces[0].get_width(), self.frame_surfaces[0].get_height()
         self.location = [loc[0] - w / 2, loc[1] - h / 2]
 
-    def change_mode(self, increment):
+    def change_mode(self, increment, with_rect):
         if increment > 0:
             self.current_mode = self.current_mode + 1 if self.current_mode < 2 else 0
         else:
@@ -57,8 +55,9 @@ class Selector:
 
         # resizing each frame depending on the current mode selected
         cmr = self.modes[self.current_mode]
-        self.frame_surfaces[0] = pygame.transform.scale(self.frame_surfaces[0], (cmr.w, cmr.h))
-        self.frame_surfaces[1] = pygame.transform.scale(self.frame_surfaces[1], (cmr.w, cmr.h))
+        if with_rect:
+            self.frame_surfaces[0] = pygame.transform.scale(self.frame_surfaces[0], (cmr.w, cmr.h))
+            self.frame_surfaces[1] = pygame.transform.scale(self.frame_surfaces[1], (cmr.w, cmr.h))
 
 
 class G1(Thread):
@@ -116,6 +115,86 @@ class G1(Thread):
 
         word_str = self.h_font.render(prev_word,True,color)
         self.word_history_d.append([word_str,word_str.get_rect()])  # the font text itself and a Rect, which has NO position yet
+
+
+class G2(Thread):
+    def __init__(self):
+        Thread.__init__(self)
+        self.e = Event()    # event listener to communicate between threads
+        self.daemon = True
+        self.question_ans = 0
+        self.question_str = ""
+        self.question_to_display = []
+        self.question_history = []
+        self.operation = 0
+        self.answers = []
+        self.answers_ints = []
+        self.selected_ans = 0
+        self.streak = 0
+        self.q_font = pygame.font.Font("data/fonts/scribble.ttf", 50)
+        self.a_font = pygame.font.Font("data/fonts/scribble.ttf", 50)
+        self.h_font = pygame.font.Font("data/fonts/scribble.ttf", 25)
+
+    def run(self):
+        while True:
+            self.answers = []
+            self.generate_operation()
+            self.generate_question(15)
+            self.generate_question_display()
+            self.generate_answers()
+            self.e.wait()
+            self.create_h_question()
+            self.e.clear()
+
+    def generate_operation(self):
+        self.operation = random.randint(1,2)
+
+    def generate_question(self,max_num):
+        num_ans = 0
+        if self.operation == 1:
+            num_one, num_two = random.randint(1, max_num), random.randint(1, max_num)
+            num_ans = num_one + num_two
+            self.question_str = str(num_one) + " + " + str(num_two) + " =  ?"
+        elif self.operation == 2:
+            num_one = random.randint(1, max_num)
+            num_two = random.randint(1, num_one)
+            num_ans = num_one - num_two
+            self.question_str = str(num_one) + " - " + str(num_two) + " =  ?"
+        self.question_ans = num_ans
+
+    def generate_question_display(self):
+        q_text = self.q_font.render(self.question_str,True,(0,0,0))
+        q_text_rect = q_text.get_rect(center=(400, 285))
+        self.question_to_display = [q_text,q_text_rect]
+
+    def generate_answers(self):
+        alt_one = self.question_ans + random.randint(1,4) * pow(-1,random.randint(1,2))
+        alt_two = self.question_ans + random.randint(1,4) * pow(-1,random.randint(1,2))
+
+        while alt_two == alt_one or alt_one < 0 or alt_two < 0:   # ensure alternate choices are not the same
+            alt_one = self.question_ans + random.randint(1, 4) * pow(-1, random.randint(1, 2))
+            alt_two = self.question_ans + random.randint(1,4) * pow(-1,random.randint(1,2))
+        self.answers_ints = [self.question_ans,alt_one,alt_two]
+        random.shuffle(self.answers_ints)
+
+        for i, ans in enumerate(self.answers_ints):
+            a_text = self.a_font.render(str(ans),True,(0,0,0))
+            a_text_rect = a_text.get_rect(center=(200*(i+1),485))
+            if ans == self.question_ans:
+                self.answers.append([a_text,a_text_rect,'c'])
+            else:
+                self.answers.append([a_text, a_text_rect])
+
+    def create_h_question(self):
+        full_question = self.question_str.replace("?",str(self.answers_ints[self.selected_ans]))
+        if 'c' in self.answers[self.selected_ans]:
+            h_text = self.h_font.render(full_question,True,(50, 168, 82))
+            self.streak += 1
+        else:
+            h_text = self.h_font.render(full_question, True, (168, 54, 50))
+            self.streak = 0
+
+        self.question_history.append([h_text,h_text.get_rect()])
 
 
 class Animation:  # two frame scribble animations
