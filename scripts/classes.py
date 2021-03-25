@@ -65,8 +65,8 @@ class G1(Thread):
         Thread.__init__(self)
         self.font = pygame.font.Font("data/fonts/scribble.ttf", 60)
         self.h_font = pygame.font.Font("data/fonts/scribble.ttf", 25)
-        self.daemon = True
         self.s = spreadsheet
+        self.daemon = True
         self.valid_ans = ["Y", "N", "P"]
         self.e = Event()
         self.word_to_display = []
@@ -75,6 +75,7 @@ class G1(Thread):
         self.streak = 0
 
     def run(self):
+        self.s.fetch_endpoint(0)
         while True:
             self.s.find_min()
             self.create_word()
@@ -196,6 +197,64 @@ class G2(Thread):
 
         self.question_history.append([h_text,h_text.get_rect()])
 
+class G3(Thread):
+    def __init__(self, spreadsheet):
+        Thread.__init__(self)
+        self.e = Event()
+        self.s = spreadsheet
+        self.daemon = True
+        self.picture_to_display = None
+        self.picture_location = []
+        self.current_question_num = 0
+        self.current_question = []
+        self.pictures_shown = 0
+        self.q_font = pygame.font.Font("data/fonts/scribble.ttf", 25)
+
+    def run(self):
+        while True:
+            self.s.fetch_endpoint(1)
+            self.s.find_picture_min()
+            self.s.load_picture()
+            self.picture_to_display = self.s.image_surface
+            self.set_location()
+            while self.current_question_num < 6:
+                self.generate_question()
+                self.e.wait()
+                self.e.clear()
+            self.update_count()
+            self.current_question_num = 0
+            self.pictures_shown += 1
+            self.e.clear()
+
+    def set_location(self):
+        x = 400 - self.picture_to_display.get_width() / 2
+        y = 300 - self.picture_to_display.get_height() / 2
+        self.picture_location = [x,y]
+
+    def generate_question(self):
+        q_str = ""
+        if self.current_question_num == 0:
+            q_str = "What colours do you see? Shapes? Lines?"
+        if self.current_question_num == 1:
+            q_str = "Are there people or animals in the picture? What are they doing?"
+        if self.current_question_num == 2:
+            q_str = "Do you notice a time of day or season?"
+        if self.current_question_num == 3:
+            q_str = "What do you think the meaning is behind this picture?"
+        if self.current_question_num == 4:
+            q_str = "Can you make up a short story? Or, you can describe the picture."
+        if self.current_question_num == 5:
+            q_str = "Answered all questions!"
+
+        q_text = self.q_font.render(q_str,True,(0,0,0))
+        q_text_rect = q_text.get_rect(center=(400,525))
+
+        self.current_question_num += 1
+        self.current_question = [q_text, q_text_rect]
+
+    def update_count(self):
+        cur_val = int(self.s.database.cell(self.s.active_row,2).value)
+        self.s.database.update_cell(self.s.active_row,2,cur_val + 1)
 
 class Animation:  # two frame scribble animations
     def __init__(self):

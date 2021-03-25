@@ -6,7 +6,6 @@ import scripts.api.api as a
 # INIT -----------------------------
 pygame.init()
 spreadsheet = a.Spreadsheet()
-spreadsheet.fetch_endpoint()
 # GLOBALS --------------------------
 title_font = pygame.font.Font("data/fonts/scribble.ttf",80)
 game_font = pygame.font.Font("data/fonts/scribble.ttf",30)
@@ -249,19 +248,54 @@ def game_mode_two(screen):
         clock.tick(FPS)
 
 def game_mode_three(screen):
+    # game mode variables
+    mode = c.G3(spreadsheet)
+    mode.start()
+
     # main loop variables + control
     running = True
     clock = pygame.time.Clock()
+
+    # transition variables
+    start_transition = False
+    transition_frame = 0
+
     while running:
         # clear screen
-        screen.fill((0, 0, 255))
+        screen.fill((255, 255, 255))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_ESCAPE:
-                    running = False
+                    start_transition = True
+                if event.key == pygame.K_RIGHT:
+                    mode.e.set()
+
+        # transition code for when mode is exited
+        if start_transition:
+            transition(screen, transition_frame)
+            if transition_frame < len(transition_dictionary['scribble']) - 1:
+                transition_frame += 1
+            else:
+                running = False
+
+        # display user's image on screen
+        try:
+            screen.blit(mode.picture_to_display, mode.picture_location)
+        except TypeError:
+            pass
+
+        # display current question
+        try:
+            screen.blit(mode.current_question[0],mode.current_question[1])
+        except IndexError:
+            pass
+
+        # display total pictures shown during current session
+        t_text, t_text_rect = loading_font("Total pictures:   " + str(mode.pictures_shown),(186, 183, 182),(400,75),30)
+        screen.blit(t_text, t_text_rect)
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -275,10 +309,10 @@ def main_menu(screen):
     transition_frame = 0
 
     # creating variables
-    title, title_rect = loading_font("The Reading Corner",(255,0,0),(400,150),80)
-    mode_one, mode_one_rect = loading_font("Single Word Mode",(222, 29, 80),(240,300),30)
+    title, title_rect = loading_font("The Learning Corner",(255,0,0),(400,150),80)
+    mode_one, mode_one_rect = loading_font("Word Mode",(222, 29, 80),(240,300),30)
     mode_two, mode_two_rect = loading_font("Math Mode",(161, 21, 58),(200,400),30)
-    mode_three, mode_three_rect = loading_font("Sentence Mode", (121,13,36), (240, 500),30)
+    mode_three, mode_three_rect = loading_font("Visual Mode", (121,13,36), (240, 500),30)
 
     # create selector object
     selector = c.Selector(screen)

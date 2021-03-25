@@ -3,7 +3,7 @@ import pygame
 import scripts.menus as m
 # INIT -----------------------------
 pygame.init()
-pygame.display.set_caption("The Reading Corner")
+pygame.display.set_caption("The Learning Corner")
 screen = pygame.display.set_mode((800,600))
 running = True
 # MAIN GAME LOOP -------------------
